@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:food_app/account/account.dart';
 import 'package:food_app/bookmark/bookmark.dart';
 import 'package:food_app/common/color_extension.dart';
-import 'package:food_app/discovery/discovery.dart';
+import 'package:food_app/discovery/discovery_view.dart';
 import 'package:food_app/home/home_view.dart';
 import 'package:food_app/top_foodie/top_foodie.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
+
+import '../discovery/discovery_view.dart';
 
 class bottom_navigation_controller extends StatefulWidget {
   const bottom_navigation_controller({super.key});
@@ -55,8 +57,8 @@ class _bottom_navigation_controllerState
         children: [
           // Các trang tương ứng với các tab
           HomeView(),
-          Discovery(),
-          TopFoodie(),
+          DiscoveryView(),
+          TopFoodieView(),
           Bookmark(),
           Account()
         ],
