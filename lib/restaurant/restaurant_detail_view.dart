@@ -1,29 +1,64 @@
 import 'dart:async';
 
 import 'package:cool_alert/cool_alert.dart';
-import 'package:floating_snackbar/floating_snackbar.dart';
 import 'package:flutter/material.dart';
-import 'package:food_app/cart/cart.dart';
-import 'package:food_app/common_widget/collection_food_item_cell.dart';
-import 'package:food_app/common_widget/food_item_cell.dart';
-import 'package:food_app/common_widget/icon_text_button.dart';
-import 'package:food_app/common_widget/img_text_button.dart';
-import 'package:food_app/common_widget/selection_text_view.dart';
-import 'package:food_app/common_widget/user_review_row.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-import '../../common/color_extension.dart';
+import '../cart/cart.dart';
 
 class RestaurantDetailView extends StatefulWidget {
-  final Map fObj;
-  const RestaurantDetailView({super.key, required this.fObj});
+  final Map<String, dynamic> fObj;
+
+  const RestaurantDetailView({
+    Key? key,
+    required this.fObj, required void Function(Map<String, dynamic> fObj) addToCart,
+  }) : super(key: key);
 
   @override
-  State<RestaurantDetailView> createState() => _RestaurantDetailViewState();
+  _RestaurantDetailViewState createState() => _RestaurantDetailViewState();
 }
 
 class _RestaurantDetailViewState extends State<RestaurantDetailView> {
-  List trendingArr = [
+  List<Map<String, dynamic>> cartItems = [];
+
+  // Phương thức hiển thị thông báo thành công khi thêm sản phẩm vào giỏ hàng
+  void showSuccessAlert() {
+    CoolAlert.show(
+      confirmBtnColor: Colors.blue,
+      backgroundColor: Colors.white,
+      context: context,
+      type: CoolAlertType.success,
+      text: "Your dish has been successfully added!",
+    );
+  }
+  // Phương thức thêm sản phẩm vào giỏ hàng
+  void addToCart(Map<String, dynamic> fObj) {
+    bool found = false;
+
+    // Duyệt qua các sản phẩm trong giỏ hàng
+    for (int i = 0; i < cartItems.length; i++) {
+      if (cartItems[i]["name"] == fObj["name"]) {
+        // Nếu tên sản phẩm đã tồn tại trong giỏ hàng, cập nhật số lượng
+        cartItems[i]["quantity"] += 1;
+        found = true;
+        break;
+      }
+    }
+
+    // Nếu sản phẩm chưa có trong giỏ hàng, thêm vào với số lượng là 1
+    if (!found) {
+      cartItems.add({
+        "name": fObj["name"],
+        "category": fObj["category"],
+        "price": fObj["price"],
+        "quantity": 1,
+      });
+    }
+
+    // Hiển thị thông báo thành công khi thêm sản phẩm vào giỏ hàng
+    showSuccessAlert();
+  }
+
+  final List<Map<String, dynamic>> trendingArr = [
     {
       "name": "Seafood Lee",
       "address": "210 Salt Pond Rd.",
@@ -43,20 +78,12 @@ class _RestaurantDetailViewState extends State<RestaurantDetailView> {
       "image": "assets/img/t3.png"
     }
   ];
-  List collectionsArr = [
+
+  final List<Map<String, dynamic>> collectionsArr = [
     {"name": "Legendary food", "place": "34", "image": "assets/img/c1.png"},
     {"name": "Seafood", "place": "28", "image": "assets/img/c2.png"},
     {"name": "Fizza Meli", "place": "56", "image": "assets/img/c3.png"}
   ];
-
-  final Completer<GoogleMapController> _controller =
-      Completer<GoogleMapController>();
-
-  static const CameraPosition _kLake = CameraPosition(
-      bearing: 192.8334901395799,
-      target: LatLng(39.43296265331129, -122.08832357078792),
-      tilt: 59.440717697143555,
-      zoom: 14.151926040649414);
 
   @override
   Widget build(BuildContext context) {
@@ -64,533 +91,425 @@ class _RestaurantDetailViewState extends State<RestaurantDetailView> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: NestedScrollView(
-          headerSliverBuilder: (context, innerBoxIsScrolled) {
-            return [
-              SliverAppBar(
-                automaticallyImplyLeading: false,
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                expandedHeight: media.width * 0.667,
-                floating: false,
-                centerTitle: false,
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Stack(
+        headerSliverBuilder: (context, innerBoxIsScrolled) {
+          return [
+            SliverAppBar(
+              automaticallyImplyLeading: false,
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              expandedHeight: media.width * 0.667,
+              floating: false,
+              centerTitle: false,
+              flexibleSpace: FlexibleSpaceBar(
+                background: Stack(
+                  children: [
+                    Container(
+                      width: media.width,
+                      height: media.width * 0.667,
+                      color: Colors.blue, // Placeholder color
+                      child: Image.asset(
+                        widget.fObj["image"].toString(),
+                        width: media.width,
+                        height: media.width * 0.8,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    Positioned(
+                      top: MediaQuery.of(context).padding.top,
+                      left: 8.0,
+                      child: IconButton(
+                        icon: Image.asset(
+                          "assets/img/back.png",
+                          width: 24,
+                          height: 30,
+                        ),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ];
+        },
+        body: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                color: Colors.white,
+                padding:
+                const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      widget.fObj["name"].toString(),
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 4, horizontal: 8),
+                      decoration: BoxDecoration(
+                          color: Colors.blue, // Placeholder color
+                          borderRadius: BorderRadius.circular(10)),
+                      child: const Text(
+                        "4.8",
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+
+              Container(
+                color: Colors.white,
+                padding:
+                const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () {},
+                      icon: Icon(Icons.share),
+                      label: Text("Share"),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () {},
+                      icon: Icon(Icons.rate_review),
+                      label: Text("Review"),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () {},
+                      icon: Icon(Icons.photo),
+                      label: Text("Photo"),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () {},
+                      icon: Icon(Icons.bookmark),
+                      label: Text("Bookmark"),
+                    ),
+                  ],
+                ),
+              ),
+
+              GestureDetector(
+                onTap: () {},
+                child: Container(
+                  color: Colors.white,
+                  height: media.width * 0.4,
+                  child: Stack(
                     children: [
                       Container(
-                        width: media.width,
-                        height: media.width * 0.667,
-                        color: TColor.secondary,
-                        child: Image.asset(
-                          widget.fObj["image"].toString(),
-                          width: media.width,
-                          height: media.width * 0.8,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      Positioned(
-                        top: MediaQuery.of(context)
-                            .padding
-                            .top, // Để đặt nút dưới thanh trạng thái
-                        left: 8.0, // Khoảng cách từ mép trái
-                        child: IconButton(
-                          icon: Image.asset(
-                            "assets/img/back.png",
-                            width: 24,
-                            height: 30,
-                          ),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
+                        padding: const EdgeInsets.all(25),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    widget.fObj["address"].toString(),
+                                    textAlign: TextAlign.left,
+                                    style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700),
+                                  ),
+                                  const SizedBox(
+                                    height: 8,
+                                  ),
+                                  Text(
+                                    widget.fObj["category"].toString(),
+                                    textAlign: TextAlign.left,
+                                    style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700),
+                                  ),
+                                  const SizedBox(
+                                    height: 8,
+                                  ),
+                                  Text(
+                                    "11:30AM to 11PM",
+                                    textAlign: TextAlign.left,
+                                    style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Order now and Add to cart buttons
+                            Column(
+                              children: [
+                                ElevatedButton(
+                                  onPressed: () {
+                                    showModalBottomSheet(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return Container(
+                                          height: 250,
+                                          padding: EdgeInsets.all(16.0),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                            children: <Widget>[
+                                              Center(
+                                                child: Text(
+                                                  'Your Cart',
+                                                  style: TextStyle(
+                                                    fontSize: 24.0,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                              SizedBox(height: 16.0),
+                                              Expanded(
+                                                child: ListView.builder(
+                                                  itemCount: cartItems.length,
+                                                  itemBuilder:
+                                                      (context, index) {
+                                                    var item = cartItems[index];
+                                                    return ListTile(
+                                                      title: Text(item["name"]),
+                                                      subtitle: Text(item["category"]),
+                                                      trailing: Text("\$${item["price"]}"),
+                                                    );
+                                                  },
+                                                ),
+                                              ),
+                                              SizedBox(height: 16.0),
+                                              Center(
+                                                child: Padding(
+                                                  padding: EdgeInsets.symmetric(
+                                                      horizontal: 15, vertical: 10),
+                                                  child: ElevatedButton(
+                                                    style: ButtonStyle(
+                                                      backgroundColor:
+                                                      MaterialStateProperty.all<Color>(
+                                                        Colors.green, // Placeholder color
+                                                      ),
+                                                      minimumSize:
+                                                      MaterialStateProperty.all<Size>(
+                                                        Size(double.infinity, 50),
+                                                      ),
+                                                    ),
+                                                    onPressed: () {
+                                                      Navigator.pop(context);
+                                                      Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) => const Cart(),
+                                                        ),
+                                                      );
+                                                    },
+                                                    child: Text("Checkout"),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  },
+                                  child: Text("Order Now"),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      addToCart(widget.fObj); // Gọi hàm addToCart với sản phẩm hiện tại
+                                    });
+                                  },
+                                  child: Text("Add to Cart"),
+                                ),
+
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
-            ];
-          },
-          body: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  color: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        widget.fObj["name"].toString(),
-                        textAlign: TextAlign.left,
-                        style: TextStyle(
-                            color: TColor.text,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 4, horizontal: 8),
-                        decoration: BoxDecoration(
-                            color: TColor.primary,
-                            borderRadius: BorderRadius.circular(10)),
-                        child: const Text(
-                          "4.8",
-                          textAlign: TextAlign.left,
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700),
-                        ),
-                      )
-                    ],
-                  ),
-                ),
 
-                Container(
-                  color: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      IconTextButton(
-                        title: "Share",
-                        subTitle: "603",
-                        icon: "assets/img/share.png",
-                        onPressed: () {},
-                      ),
-                      IconTextButton(
-                        title: "Review",
-                        subTitle: "953",
-                        icon: "assets/img/review.png",
-                        onPressed: () {},
-                      ),
-                      IconTextButton(
-                        title: "Photo",
-                        subTitle: "115",
-                        icon: "assets/img/photo.png",
-                        onPressed: () {},
-                      ),
-                      IconTextButton(
-                        title: "Bookmark",
-                        subTitle: "1478",
-                        icon: "assets/img/bookmark_detail.png",
-                        onPressed: () {},
-                      ),
-                    ],
-                  ),
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 15),
+                child: Divider(
+                  height: 20,
+                  thickness: 4,
+                  color: Colors.green, // Placeholder color
                 ),
+              ),
 
-                GestureDetector(
-                  onTap: () {},
-                  child: Container(
-                    color: Colors.white,
-                    height: media.width * 0.4,
-                    child: Stack(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(25),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      widget.fObj["address"].toString(),
-                                      textAlign: TextAlign.left,
-                                      style: TextStyle(
-                                          color: TColor.gray,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w700),
-                                    ),
-                                    const SizedBox(
-                                      height: 8,
-                                    ),
-                                    Text(
-                                      widget.fObj["category"].toString(),
-                                      textAlign: TextAlign.left,
-                                      style: TextStyle(
-                                          color: TColor.gray,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w700),
-                                    ),
-                                    const SizedBox(
-                                      height: 8,
-                                    ),
-                                    Text(
-                                      "11:30AM to 11PM",
-                                      textAlign: TextAlign.left,
-                                      style: TextStyle(
-                                          color: TColor.gray,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w700),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              //Order now
-                              Column(
-                                children: [
-                                  FilledButton(
-                                    onPressed: () {
-                                      showModalBottomSheet(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return Container(
-                                            height: 250,
-                                            padding: EdgeInsets.all(16.0),
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: <Widget>[
-                                                Center(
-                                                  child: Text(
-                                                    'Your Cart',
-                                                    style: TextStyle(
-                                                      fontSize: 24.0,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                ),
-                                                SizedBox(height: 16.0),
-                                                Text(
-                                                  'This is a modal bottom sheet. You can add any content here.',
-                                                  style: TextStyle(
-                                                    fontSize: 16.0,
-                                                  ),
-                                                ),
-                                                SizedBox(height: 16.0),
-                                                Center(
-                                                  child: Padding(
-                                                    padding:
-                                                        EdgeInsets.symmetric(
-                                                            horizontal: 15,
-                                                            vertical: 10),
-                                                    child: Center(
-                                                      child: FilledButton(
-                                                        style: ButtonStyle(
-                                                          backgroundColor:
-                                                              MaterialStateProperty
-                                                                  .all<Color?>(
-                                                                      TColor
-                                                                          .primary),
-                                                          minimumSize:
-                                                              MaterialStateProperty
-                                                                  .all<Size>(Size(
-                                                                      double
-                                                                          .infinity,
-                                                                      50)),
-                                                        ),
-                                                        onPressed: () {
-                                                          Navigator.push(
-                                                              context,
-                                                              MaterialPageRoute(
-                                                                  builder:
-                                                                      (context) =>
-                                                                          const Cart()));
-                                                        },
-                                                        child: Text("Checkout"),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                        },
-                                      );
-                                    },
-                                    child: Text("Order Now"),
-                                    style: ButtonStyle(
-                                      backgroundColor:
-                                          MaterialStateProperty.all<Color?>(
-                                              TColor.primary),
-                                    ),
-                                  ),
-                                  // Add to cart
-                                  FilledButton(
-                                    onPressed: () {
-                                      CoolAlert.show(
-                                        confirmBtnColor: TColor.primary,
-                                        backgroundColor: TColor.alertBackColor,
-                                        context: context,
-                                        type: CoolAlertType.success,
-                                        text: "Your item added",
-                                      );
-                                    },
-                                    child: Text("Add to cart"),
-                                    style: ButtonStyle(
-                                      backgroundColor:
-                                          MaterialStateProperty.all<Color?>(
-                                              TColor.orderColor),
-                                    ),
-                                  )
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // const SizedBox(
-                //   height: 15,
-                // ),
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 15),
-                  child: Divider(
-                    height: 20, // Chiều cao của Divider
-                    thickness: 4, // Độ dày của Divider
-                    color: TColor.primary, // Màu sắc của Divider
-                  ),
-                ),
-                Container(
-                  margin:
-                      const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
-                  child: Stack(
-                    alignment: Alignment.centerLeft,
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(5),
-                        child: Image.asset(
-                          widget.fObj["image"].toString(),
-                          width: media.width,
-                          height: media.width * 0.2,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      Container(
-                        width: media.width,
-                        height: media.width * 0.2,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                              colors: [Colors.black54, Colors.transparent]),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.all(15.0),
-                        child: Text(
-                          "Order food Online",
-                          textAlign: TextAlign.left,
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                SelectionTextView(
-                  title: "Photos",
-                  actionTitle: "See all",
-                  onSeeAllTap: () {},
-                ),
-
-                GestureDetector(
-                  onTap: () {},
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: ImgTextButton(
-                            title: "Food",
-                            subTitle: "(80)",
-                            image: "assets/img/c1.png",
-                            onPressed: () {},
-                          ),
-                        ),
-                        Expanded(
-                          child: ImgTextButton(
-                            title: "Ambience",
-                            subTitle: "(25)",
-                            image: "assets/img/c2.png",
-                            onPressed: () {},
-                          ),
-                        ),
-                        Expanded(
-                          child: ImgTextButton(
-                            title: "Menu",
-                            subTitle: "(10)",
-                            image: "assets/img/c3.png",
-                            onPressed: () {},
-                          ),
-                        ),
-                        Expanded(
-                          child: ImgTextButton(
-                            title: "All Photos",
-                            subTitle: "(115)",
-                            image: "assets/img/l1.png",
-                            onPressed: () {},
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                Divider(
-                  height: 4,
-                  color: TColor.gray,
-                ),
-
-                SelectionTextView(
-                  title: "Details",
-                  actionTitle: "Read All",
-                  onSeeAllTap: () {},
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  child: Column(
-                    children: [
-                      const SizedBox(
-                        height: 8,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Call",
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                                color: TColor.gray,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700),
-                          ),
-                          Text(
-                            "(212 789-7898)",
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                                color: TColor.primary,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700),
-                          )
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 8,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Cuisines",
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                                color: TColor.gray,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700),
-                          ),
-                          Text(
-                            "Pizza Italian",
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                                color: TColor.primary,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700),
-                          )
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 8,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Average Cost",
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                                color: TColor.gray,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700),
-                          ),
-                          Text(
-                            "\$20 - \$40",
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                                color: TColor.gray,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700),
-                          )
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 8,
-                      ),
-                    ],
-                  ),
-                ),
-
-                //TODO: Trending this week
-                SelectionTextView(
-                  title: "Same Restaurants",
-                  onSeeAllTap: () {},
-                ),
-
-                SizedBox(
-                  height: media.width * 0.6,
-                  child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      itemCount: trendingArr.length,
-                      itemBuilder: (context, index) {
-                        var fObj = trendingArr[index] as Map? ?? {};
-
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => RestaurantDetailView(
-                                          fObj: fObj,
-                                        )));
-                          },
-                          child: FoodItemCell(
-                            fObj: fObj,
+              // Trending this week
+              _buildSectionTitle("Same Restaurants"),
+              SizedBox(
+                height: media.width * 0.6,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  itemCount: trendingArr.length,
+                  itemBuilder: (context, index) {
+                    var fObj = trendingArr[index];
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => RestaurantDetailView(
+                              fObj: fObj, addToCart: (Map<String, dynamic> fObj) {  },
+                            ),
                           ),
                         );
-                      }),
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Image.asset(
+                              fObj["image"].toString(),
+                              width: media.width * 0.4,
+                              height: media.width * 0.4,
+                              fit: BoxFit.cover,
+                            ),
+                            Text(
+                              fObj["name"].toString(),
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            Text(fObj["category"].toString()),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
+              ),
 
-                //TODO: Collections by Capi
-                SelectionTextView(
-                  title: "Collections by Capi",
-                  onSeeAllTap: () {},
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 15),
+                child: Divider(
+                  height: 20,
+                  thickness: 4,
+                  color: Colors.green, // Placeholder color
                 ),
+              ),
 
-                SizedBox(
-                  height: media.width * 0.6,
-                  child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      itemCount: collectionsArr.length,
-                      itemBuilder: (context, index) {
-                        var fObj = collectionsArr[index] as Map? ?? {};
-
-                        return CollectionFoodItemCell(
-                          fObj: fObj,
-                        );
-                      }),
+              // Collections
+              _buildSectionTitle("Related Collection"),
+              SizedBox(
+                height: media.width * 0.6,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  itemCount: collectionsArr.length,
+                  itemBuilder: (context, index) {
+                    var cObj = collectionsArr[index];
+                    return GestureDetector(
+                      onTap: () {
+                        // Handle collection item tap
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Image.asset(
+                              cObj["image"].toString(),
+                              width: media.width * 0.4,
+                              height: media.width * 0.4,
+                              fit: BoxFit.cover,
+                            ),
+                            Text(
+                              cObj["name"].toString(),
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            Text("${cObj["place"]} Places"),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
+              ),
+              SizedBox(height: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+  // Phương thức tạo tiêu đề cho mỗi phần
+  Widget _buildSectionTitle(String title) {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
+      child: Text(
+        title,
+        textAlign: TextAlign.left,
+        style: TextStyle(
+          color: Colors.black,
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
 
-                const SizedBox(
-                  height: 15,
-                )
-              ],
-            ),
-          )),
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+      child: Text(
+        title,
+        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+
+// class Cart extends StatefulWidget {
+//   const Cart({Key? key}) : super(key: key);
+//
+//   @override
+//   _CartState createState() => _CartState();
+//}
+
+class _CartState extends State<Cart> {
+  List<Map<String, dynamic>> cartItems = [];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Your Cart'),
+      ),
+      body: ListView.builder(
+        itemCount: cartItems.length,
+        itemBuilder: (context, index) {
+          var item = cartItems[index];
+          return ListTile(
+            title: Text(item["name"]),
+            subtitle: Text(item["category"]),
+            trailing: Text("\$${item["price"]}"),
+          );
+        },
+      ),
     );
   }
 }

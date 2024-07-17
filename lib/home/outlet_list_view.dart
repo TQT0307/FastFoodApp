@@ -5,18 +5,19 @@ import '../../common_widget/outlet_list_row.dart';
 import '../../common_widget/popup_layout.dart';
 
 class OutletListView extends StatefulWidget {
-  final Map fObj;
-  const OutletListView({super.key, required this.fObj});
+  final Map<String, dynamic> fObj;
+
+  const OutletListView({Key? key, required this.fObj}) : super(key: key);
 
   @override
   State<OutletListView> createState() => _OutletListViewState();
 }
 
 class _OutletListViewState extends State<OutletListView> {
-
-  List outletArr = [
+  List<Map<String, dynamic>> outletArr = [
     {
       "name": "Lombar Pizza",
+      "price": 10.0,
       "address": "East 46th Street",
       "category": "Pizza, Italian",
       "image": "assets/img/l1.png",
@@ -25,6 +26,7 @@ class _OutletListViewState extends State<OutletListView> {
     },
     {
       "name": "Sushi Bar",
+      "price": 2.0,
       "address": "210 Salt Pond Rd.",
       "category": "Sushi, Japan",
       "image": "assets/img/l2.png",
@@ -33,6 +35,7 @@ class _OutletListViewState extends State<OutletListView> {
     },
     {
       "name": "Steak House",
+      "price": 12.0,
       "address": "East 46th Street",
       "category": "Steak, American",
       "image": "assets/img/l3.png",
@@ -41,6 +44,7 @@ class _OutletListViewState extends State<OutletListView> {
     },
     {
       "name": "Seafood Lee",
+      "price": 20.0,
       "address": "210 Salt Pond Rd.",
       "category": "Seafood, Spain",
       "image": "assets/img/t1.png",
@@ -49,6 +53,7 @@ class _OutletListViewState extends State<OutletListView> {
     },
     {
       "name": "Egg Tomato",
+      "price": 2.0,
       "address": "East 46th Street",
       "category": "Egg, Italian",
       "image": "assets/img/t2.png",
@@ -57,6 +62,7 @@ class _OutletListViewState extends State<OutletListView> {
     },
     {
       "name": "Burger Hot",
+      "price": 2.0,
       "address": "East 46th Street",
       "category": "Pizza, Italian",
       "image": "assets/img/t3.png",
@@ -70,12 +76,12 @@ class _OutletListViewState extends State<OutletListView> {
     var media = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: TColor.bg,
+      backgroundColor: Colors.white,
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
             SliverAppBar(
-              backgroundColor: TColor.list[0],
+              backgroundColor: Colors.blue,
               elevation: 0,
               expandedHeight: media.width * 0.667,
               floating: false,
@@ -84,9 +90,9 @@ class _OutletListViewState extends State<OutletListView> {
                 title: Container(
                   width: media.width,
                   height: media.width * 0.667,
-                  color: TColor.list[0],
+                  color: Colors.blue,
                   child: Container(
-                    padding:  EdgeInsets.only(top: media.width * 0.25),
+                    padding: EdgeInsets.only(top: media.width * 0.25),
                     height: media.width * 0.8,
                     alignment: Alignment.center,
                     child: Image.asset(
@@ -110,63 +116,63 @@ class _OutletListViewState extends State<OutletListView> {
               ),
               actions: [
                 TextButton(
-                    onPressed: () {},
-                    child: const Text(
-                      "Share",
-                      textAlign: TextAlign.left,
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700),
-                    ))
-              ],
-            ),
-          ];
-        },
-        body: Stack(
-          alignment: Alignment.topCenter,
-          children: [
-            
-              ListView.builder(
-                  itemCount: outletArr.length,
-                  itemBuilder: (context, index) {
-                    var fObj = outletArr[index] as Map? ?? {};
-                    return OutletListRow(
-                      fObj: fObj,
-                    );
-                  }),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  child: Text(
-                      "${ widget.fObj["outlets"] } Outlets",
-                      style: TextStyle(
-                          color: TColor.text,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700),
-                    
-                  ),
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: TextButton(
-                    onPressed: () {
-                      
-                    },
-                    child: Text(
-                      "Filter",
-                      style: TextStyle(
-                          color: TColor.primary,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700),
+                  onPressed: () {},
+                  child: const Text(
+                    "Chia sẻ",
+                    textAlign: TextAlign.left,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 )
               ],
+            ),
+          ];
+        },
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "${outletArr.length} Cửa hàng",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      // Xử lý khi nhấn nút lọc
+                    },
+                    child: Text(
+                      "Lọc",
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: outletArr.length,
+                itemBuilder: (context, index) {
+                  var fObj = outletArr[index];
+                  return OutletListRow(
+                    fObj: fObj,
+                  );
+                },
+              ),
             ),
           ],
         ),
