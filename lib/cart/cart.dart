@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'OrderSummaryPage.dart';
 
 class Cart extends StatefulWidget {
   const Cart({Key? key}) : super(key: key);
@@ -9,15 +10,12 @@ class Cart extends StatefulWidget {
   static List<Map<String, dynamic>> cartItems = []; // Danh sách sản phẩm trong giỏ hàng
 
   static void addItem(Map<String, dynamic> item) {
-    // Thêm các thuộc tính category và price cho sản phẩm
     item['category'] = "Food"; // Thay "Thực phẩm" bằng danh mục thực tế của sản phẩm
     item['price'] = 10.0; // Thay 10.0 bằng giá thực tế của sản phẩm
 
-    // Kiểm tra xem sản phẩm đã tồn tại trong giỏ hàng chưa
     bool found = false;
     for (int i = 0; i < cartItems.length; i++) {
       if (cartItems[i]['name'] == item['name']) { // So sánh dựa trên tên sản phẩm
-        // Tăng số lượng của sản phẩm đã có trong giỏ hàng
         cartItems[i]['quantity'] += 1;
         found = true;
         break;
@@ -25,25 +23,20 @@ class Cart extends StatefulWidget {
     }
 
     if (!found) {
-      // Nếu sản phẩm chưa có trong giỏ hàng, thêm mới vào
       item['quantity'] = 1; // Mặc định số lượng là 1
       cartItems.add(item);
       print('Add product to cart: $item');
     }
 
-    // Thông báo cập nhật cho trạng thái của Cart
     if (_cartState != null) {
       _cartState!.updateCart(); // Gọi phương thức cập nhật giỏ hàng
     }
   }
 
-
   static void removeItem(int index, BuildContext context) {
-    // Xóa sản phẩm khỏi giỏ hàng dựa trên chỉ số index
     if (index >= 0 && index < cartItems.length) {
       cartItems.removeAt(index);
       print('Delete product at location $index');
-      // Thông báo cập nhật cho trạng thái của Cart
       if (_cartState != null) {
         _cartState!.updateCart(); // Gọi phương thức cập nhật giỏ hàng
       }
@@ -72,7 +65,7 @@ class Cart extends StatefulWidget {
                   if (_cartState != null) {
                     _cartState!.updateCart(); // Gọi phương thức cập nhật giỏ hàng
                   }
-                  Navigator.of(context).pop(); // Đóng hộp thoại sau khi xóa
+                  Navigator.of(context).pop();
                 },
               ),
             ],
@@ -95,7 +88,6 @@ class _CartState extends State<Cart> {
     return totalPrice;
   }
 
-  // Phương thức để cập nhật trạng thái giỏ hàng
   void updateCart() {
     setState(() {}); // Gọi setState để rebuild widget
   }
@@ -103,7 +95,6 @@ class _CartState extends State<Cart> {
   @override
   void initState() {
     super.initState();
-    //  trạng thái của Cart khi khởi tạo
     Cart._cartState = this;
   }
 
@@ -118,9 +109,9 @@ class _CartState extends State<Cart> {
           IconButton(
             icon: Icon(Icons.delete_forever),
             onPressed: () {
-              Cart.clearCart(context); // Gọi phương thức xóa tất cả sản phẩm
+              Cart.clearCart(context);
             },
-            iconSize: 40, // Kích thước của biểu tượng
+            iconSize: 40,
           ),
         ],
       ),
@@ -131,8 +122,7 @@ class _CartState extends State<Cart> {
               itemCount: Cart.cartItems.length,
               itemBuilder: (context, index) {
                 var item = Cart.cartItems[index];
-                int quantity = item['quantity'] ??
-                    1; // Lấy số lượng, mặc định là 1
+                int quantity = item['quantity'] ?? 1;
 
                 void increaseQuantity() {
                   setState(() {
@@ -147,7 +137,6 @@ class _CartState extends State<Cart> {
                       quantity--;
                       item['quantity'] = quantity;
                     } else {
-                      // Xóa sản phẩm nếu số lượng giảm xuống dưới 1
                       Cart.removeItem(index, context);
                     }
                   });
@@ -157,40 +146,32 @@ class _CartState extends State<Cart> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15.0),
                   ),
-                  elevation: 5, // Độ nổi của khung
+                  elevation: 5,
                   margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   child: ListTile(
-                    contentPadding: EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 10),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     title: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
                           child: Text(
                             item['name'].toString(),
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                         ),
                         Row(
                           children: [
                             IconButton(
                               icon: Icon(Icons.remove),
-                              onPressed: () {
-                                decreaseQuantity();
-                              },
+                              onPressed: decreaseQuantity,
                             ),
                             Text(
-                              '$quantity', // Hiển thị số lượng
+                              '$quantity',
                               style: TextStyle(fontSize: 16),
                             ),
                             IconButton(
                               icon: Icon(Icons.add),
-                              onPressed: () {
-                                increaseQuantity();
-                              },
+                              onPressed: increaseQuantity,
                             ),
                             IconButton(
                               icon: Icon(Icons.delete),
@@ -200,8 +181,7 @@ class _CartState extends State<Cart> {
                                   builder: (BuildContext context) {
                                     return AlertDialog(
                                       title: Text('Confirm Delete'),
-                                      content: Text(
-                                          'Are you sure you want to remove ${item['name']} from your cart?'),
+                                      content: Text('Are you sure you want to remove ${item['name']} from your cart?'),
                                       actions: <Widget>[
                                         TextButton(
                                           child: Text('Cancel'),
@@ -256,13 +236,27 @@ class _CartState extends State<Cart> {
                 ),
                 SizedBox(height: 10),
                 ElevatedButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Payment processed successfully!'),
-                        duration: Duration(seconds: 2),
+                  onPressed: () async {
+                    // Chuyển đến trang OrderSummaryPage và đợi kết quả
+                    final result = await Navigator.of(context).push<Map<String, dynamic>>(
+                      MaterialPageRoute(
+                        builder: (context) => OrderSummaryPage(
+                          totalPrice: totalPrice, // Truyền tổng tiền đến OrderSummaryPage
+                        ),
                       ),
                     );
+
+                    if (result != null) {
+                      // Xử lý thông tin trả về từ OrderSummaryPage
+                      final paymentMethod = result['paymentMethod'];
+                      final address = result['address'];
+                      final phoneNumber = result['phoneNumber'];
+
+                      // Tiếp tục xử lý đơn hàng với thông tin đã chọn
+                      print('Payment Method: $paymentMethod');
+                      print('Address: $address');
+                      print('Phone Number: $phoneNumber');
+                    }
                   },
                   style: ButtonStyle(
                     backgroundColor: MaterialStateProperty.all<Color>(Colors.white),
@@ -290,5 +284,3 @@ class _CartState extends State<Cart> {
     );
   }
 }
-
-
