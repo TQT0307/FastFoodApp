@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../account/OrderHistoryPage.dart';
+import '../home/home_view.dart';
+import 'OrderConfirmationPage .dart';
+
 class OrderSummaryPage extends StatefulWidget {
   final double totalPrice;
 
@@ -90,7 +94,7 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
       if (_isMomoPhoneNumberValid) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Thông tin MoMo đã được liên kết thành công!'),
+            content: Text('MoMo information has been successfully linked!'),
             duration: Duration(seconds: 2),
           ),
         );
@@ -101,7 +105,7 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Vui lòng nhập số điện thoại hợp lệ!'),
+            content: Text('Please enter a valid phone number!'),
             duration: Duration(seconds: 2),
           ),
         );
@@ -110,7 +114,7 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
       if (_isCardNumberValid && _isExpiryDateValid && _isCVVValid) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Thông tin thẻ ngân hàng đã được liên kết thành công!'),
+            content: Text('Bank card information has been successfully linked!'),
             duration: Duration(seconds: 2),
           ),
         );
@@ -121,7 +125,7 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Vui lòng nhập thông tin thẻ hợp lệ!'),
+            content: Text('Please enter valid card information!'),
             duration: Duration(seconds: 2),
           ),
         );
@@ -129,7 +133,7 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
     } else if (selectedPaymentMethod == 'Cash payment') {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Thanh toán bằng tiền mặt đã được liên kết thành công!'),
+          content: Text('Payment upon receipt of order!'),
           duration: Duration(seconds: 2),
         ),
       );
@@ -140,7 +144,7 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Vui lòng nhập thông tin thanh toán đầy đủ!'),
+          content: Text('Please enter complete payment information!'),
           duration: Duration(seconds: 2),
         ),
       );
@@ -148,32 +152,41 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
   }
 
   void _confirmOrder() {
-    if (selectedPaymentMethod != null &&
-        _addressController.text.isNotEmpty &&
-        _isPhoneNumberValid) {
-      if (paymentInfoConfirmed) {
-        Navigator.of(context).pop({
-          'paymentMethod': selectedPaymentMethod,
-          'address': _addressController.text,
-          'phoneNumber': _phoneNumberController.text,
-        });
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Vui lòng hoàn tất thông tin thanh toán trước khi xác nhận đơn hàng!'),
-            duration: Duration(seconds: 2),
-          ),
+    if (_addressController.text.isNotEmpty && _phoneNumberController.text.isNotEmpty) {
+      Map<String, dynamic> orderDetails = {
+        'totalPrice': widget.totalPrice,
+        'address': _addressController.text,
+        'phoneNumber': _phoneNumberController.text,
+      };
+
+      // Lưu đơn hàng vào lịch sử
+      OrderHistory.addOrder(orderDetails);
+
+      // Navigate to the confirmation page and then reset to HomeView
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => OrderConfirmationPage(totalPrice: widget.totalPrice),
+        ),
+      ).then((_) {
+        // After returning from OrderConfirmationPage, remove all routes and reset to HomeView
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => HomeView()),
+              (Route<dynamic> route) => false, // This will remove all routes from the stack
         );
-      }
+      });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Vui lòng chọn phương thức thanh toán và nhập địa chỉ cùng số điện thoại hợp lệ!'),
-          duration: Duration(seconds: 2),
-        ),
+        SnackBar(content: Text('Please complete all fields!')),
       );
     }
   }
+
+
+
+
+
+
+
 
   void _validateFields() {
     setState(() {
@@ -375,11 +388,25 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: _confirmOrder,
-              child: Text('Confirm Order'),
+              child: Text(
+                'Confirm Order',
+                style: TextStyle(
+                  color: Colors.white, // Text color
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white, backgroundColor: Colors.green, // Ripple color (effect color when button is pressed)
+                elevation: 5, // Shadow elevation
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0), // Rounded corners
+                ),
+                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15), // Padding inside the button
+              ),
             ),
+
           ],
         ),
       ),
     );
   }
-  }
+}

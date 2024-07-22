@@ -7,38 +7,33 @@ class Cart extends StatefulWidget {
   @override
   State<Cart> createState() => _CartState();
 
-  static List<Map<String, dynamic>> cartItems = []; // Danh sách sản phẩm trong giỏ hàng
+  static List<Map<String, dynamic>> cartItems = [];
 
   static void addItem(Map<String, dynamic> item) {
-    item['category'] = "Food"; // Thay "Thực phẩm" bằng danh mục thực tế của sản phẩm
-    item['price'] = 10.0; // Thay 10.0 bằng giá thực tế của sản phẩm
-
+    item['category'] = "Food";
+    item['price'] = 10.0;
     bool found = false;
     for (int i = 0; i < cartItems.length; i++) {
-      if (cartItems[i]['name'] == item['name']) { // So sánh dựa trên tên sản phẩm
+      if (cartItems[i]['name'] == item['name']) {
         cartItems[i]['quantity'] += 1;
         found = true;
         break;
       }
     }
-
     if (!found) {
-      item['quantity'] = 1; // Mặc định số lượng là 1
+      item['quantity'] = 1;
       cartItems.add(item);
-      print('Add product to cart: $item');
     }
-
     if (_cartState != null) {
-      _cartState!.updateCart(); // Gọi phương thức cập nhật giỏ hàng
+      _cartState!.updateCart();
     }
   }
 
   static void removeItem(int index, BuildContext context) {
     if (index >= 0 && index < cartItems.length) {
       cartItems.removeAt(index);
-      print('Delete product at location $index');
       if (_cartState != null) {
-        _cartState!.updateCart(); // Gọi phương thức cập nhật giỏ hàng
+        _cartState!.updateCart();
       }
     }
   }
@@ -63,7 +58,7 @@ class Cart extends StatefulWidget {
                 onPressed: () {
                   cartItems.clear();
                   if (_cartState != null) {
-                    _cartState!.updateCart(); // Gọi phương thức cập nhật giỏ hàng
+                    _cartState!.updateCart();
                   }
                   Navigator.of(context).pop();
                 },
@@ -75,7 +70,6 @@ class Cart extends StatefulWidget {
     }
   }
 
-  // Tham chiếu đến trạng thái của Cart để cập nhật
   static _CartState? _cartState;
 }
 
@@ -89,22 +83,16 @@ class _CartState extends State<Cart> {
   }
 
   void updateCart() {
-    setState(() {}); // Gọi setState để rebuild widget
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    Cart._cartState = this;
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    double totalPrice = getTotalPrice(); // Lấy tổng tiền
+    double totalPrice = getTotalPrice();
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Giỏ Hàng'),
+        title: Text('Your cart'),
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.delete_forever),
@@ -115,172 +103,136 @@ class _CartState extends State<Cart> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: Cart.cartItems.length,
-              itemBuilder: (context, index) {
-                var item = Cart.cartItems[index];
-                int quantity = item['quantity'] ?? 1;
-
-                void increaseQuantity() {
-                  setState(() {
-                    quantity++;
-                    item['quantity'] = quantity;
-                  });
-                }
-
-                void decreaseQuantity() {
-                  setState(() {
-                    if (quantity > 1) {
-                      quantity--;
-                      item['quantity'] = quantity;
-                    } else {
-                      Cart.removeItem(index, context);
-                    }
-                  });
-                }
-
-                return Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15.0),
-                  ),
-                  elevation: 5,
-                  margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  child: ListTile(
-                    contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    title: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            item['name'].toString(),
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            IconButton(
-                              icon: Icon(Icons.remove),
-                              onPressed: decreaseQuantity,
-                            ),
-                            Text(
-                              '$quantity',
-                              style: TextStyle(fontSize: 16),
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.add),
-                              onPressed: increaseQuantity,
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.delete),
-                              onPressed: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return AlertDialog(
-                                      title: Text('Confirm Delete'),
-                                      content: Text('Are you sure you want to remove ${item['name']} from your cart?'),
-                                      actions: <Widget>[
-                                        TextButton(
-                                          child: Text('Cancel'),
-                                          onPressed: () {
-                                            Navigator.of(context).pop();
-                                          },
-                                        ),
-                                        TextButton(
-                                          child: Text('Delete'),
-                                          onPressed: () {
-                                            Cart.removeItem(index, context);
-                                            Navigator.of(context).pop();
-                                          },
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Category: ${item['category'].toString()}',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        SizedBox(height: 6),
-                        Text(
-                          'Price: \$${item['price'].toString()}',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blue.shade200, Colors.purple.shade200],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-            child: Column(
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                itemCount: Cart.cartItems.length,
+                itemBuilder: (context, index) {
+                  var item = Cart.cartItems[index];
+                  return buildCartItem(item, context, index);
+                },
+              ),
+            ),
+            buildTotalSection(totalPrice, context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildCartItem(Map<String, dynamic> item, BuildContext context, int index) {
+    int quantity = item['quantity'];
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
+      elevation: 5,
+      margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      child: ListTile(
+        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                item['name'].toString(),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+            Row(
               children: [
-                Text(
-                  'Total amount: \$${totalPrice.toStringAsFixed(2)}',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                IconButton(
+                  icon: Icon(Icons.remove),
+                  color: Colors.red,
+                  onPressed: () => adjustQuantity(item, false),
                 ),
-                SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: () async {
-                    // Chuyển đến trang OrderSummaryPage và đợi kết quả
-                    final result = await Navigator.of(context).push<Map<String, dynamic>>(
-                      MaterialPageRoute(
-                        builder: (context) => OrderSummaryPage(
-                          totalPrice: totalPrice, // Truyền tổng tiền đến OrderSummaryPage
-                        ),
-                      ),
-                    );
-
-                    if (result != null) {
-                      // Xử lý thông tin trả về từ OrderSummaryPage
-                      final paymentMethod = result['paymentMethod'];
-                      final address = result['address'];
-                      final phoneNumber = result['phoneNumber'];
-
-                      // Tiếp tục xử lý đơn hàng với thông tin đã chọn
-                      print('Payment Method: $paymentMethod');
-                      print('Address: $address');
-                      print('Phone Number: $phoneNumber');
-                    }
-                  },
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all<Color>(Colors.white),
-                    elevation: MaterialStateProperty.all<double>(5.0),
-                    shape: MaterialStateProperty.all<OutlinedBorder>(
-                      RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                        side: BorderSide(color: Colors.black, width: 2.0),
-                      ),
-                    ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
-                    child: Text(
-                      'Pay',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
-                    ),
-                  ),
+                Text('$quantity', style: TextStyle(fontSize: 16)),
+                IconButton(
+                  icon: Icon(Icons.add),
+                  color: Colors.green,
+                  onPressed: () => adjustQuantity(item, true),
+                ),
+                IconButton(
+                  icon: Icon(Icons.delete),
+                  onPressed: () => confirmDelete(item['name'], index, context),
                 ),
               ],
             ),
-          ),
-        ],
+          ],
+        ),
+        subtitle: Text('Price: \$${item['price']} x $quantity', style: TextStyle(fontSize: 16)),
       ),
     );
+  }
+
+  Widget buildTotalSection(double totalPrice, BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.all(16.0),
+      child: ElevatedButton(
+        onPressed: () => navigateToSummaryPage(totalPrice, context),
+        style: ElevatedButton.styleFrom(backgroundColor: Colors.greenAccent),
+        child: Text('Checkout (\$${totalPrice.toStringAsFixed(2)})', style: TextStyle(fontSize: 20))
+
+      ),
+    );
+  }
+
+  void adjustQuantity(Map<String, dynamic> item, bool increase) {
+    setState(() {
+      if (increase) {
+        item['quantity'] += 1;
+      } else {
+        if (item['quantity'] > 1) {
+          item['quantity'] -= 1;
+        } else {
+          Cart.removeItem(Cart.cartItems.indexOf(item), context);
+        }
+      }
+    });
+  }
+
+  void confirmDelete(String name, int index, BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirm Delete'),
+          content: Text('Are you sure you want to remove $name from your cart?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: Text('Delete'),
+              onPressed: () {
+                Cart.removeItem(index, context);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void navigateToSummaryPage(double totalPrice, BuildContext context) async {
+    final result = await Navigator.of(context).push<Map<String, dynamic>>(
+      MaterialPageRoute(
+        builder: (context) => OrderSummaryPage(totalPrice: totalPrice),
+      ),
+    );
+    if (result != null) {
+      print('Payment Method: ${result['paymentMethod']}');
+      print('Address: ${result['address']}');
+      print('Phone Number: ${result['phoneNumber']}');
+    }
   }
 }
