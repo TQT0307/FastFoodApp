@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:food_app/account/account.dart';
+import 'package:food_app/account/Account.dart';
 import 'package:food_app/bookmark/bookmark.dart';
 import 'package:food_app/common/color_extension.dart';
 import 'package:food_app/discovery/discovery_view.dart';

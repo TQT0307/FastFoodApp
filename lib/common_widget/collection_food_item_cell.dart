@@ -5,7 +5,7 @@ import '../common/color_extension.dart';
 class CollectionFoodItemCell extends StatelessWidget {
   final Map fObj;
   final bool isGrid;
-  const CollectionFoodItemCell({super.key, required this.fObj, this.isGrid = false});
+  const CollectionFoodItemCell({super.key, required this.fObj, this.isGrid = false, required String name});
 
   @override
   Widget build(BuildContext context) {
